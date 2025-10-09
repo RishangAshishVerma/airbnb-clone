@@ -1,0 +1,71 @@
+import mongoose, { Types } from "mongoose";
+import User from "./user.model";
+
+const listingSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true
+    },
+
+    description: {
+        type: String,
+        required: true
+    },
+
+    host: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+
+    image1: {
+        type: String,
+        required: true
+    },
+
+    image2: {
+        type: String,
+        required: true
+    },
+
+    image3: {
+        type: String,
+        required: true
+    },
+
+    rent: {
+        type: Number,
+        required: true
+    },
+
+    city: {
+        type: String,
+        required: true
+    },
+
+    landMark: {
+        type: String,
+        required: true
+    },
+
+    isbooked: {
+        type: Boolean,
+        default: false
+    },
+
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
+
+    deletedAt: {
+        type: Date,
+        default: null
+    }
+
+
+}, { timestamps: true })
+
+const Listing = mongoose.model("Listing", listingSchema)
+
+export default Listing
