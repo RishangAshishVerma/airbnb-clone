@@ -1,6 +1,10 @@
 import express from "express"
 import dotenv from "dotenv";
 dotenv.config();
+// console.log("Cloudinary Cloud Name:", process.env.CLOUDINARY_CLOUD_NAME);
+// console.log("Cloudinary API Key:", process.env.CLOUDINARY_API_KEY);
+// console.log("Cloudinary API Secret:", process.env.CLOUDINARY_API_SECRET);
+
 import connectDb from "./utils/db_connect.js";
 import authRouter from "./routes/auth.route.js";
 import cookieParser from "cookie-parser";

@@ -11,4 +11,4 @@ listingRouter.post("/add", isAuth, upload.fields([
     { name: "image3", maxCount: 1 },
 ]), addListing)
 
-export default listingRouter
+export default listingRouter        
