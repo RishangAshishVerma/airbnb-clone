@@ -1,5 +1,5 @@
 import mongoose, { Types } from "mongoose";
-import User from "./user.model";
+import User from "./user.model.js";
 
 const listingSchema = new mongoose.Schema({
     title: {
@@ -46,6 +46,12 @@ const listingSchema = new mongoose.Schema({
     landMark: {
         type: String,
         required: true
+    },
+
+    category: {
+        type: String,
+        required: true
+
     },
 
     isbooked: {
