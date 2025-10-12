@@ -18,22 +18,22 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    
-    listing: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "listing"
-    },
 
-    booking: {
+    listing: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Listing"
+    }],
+
+    booking: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "booking"
-    },
+    }],
 
     isDeleted: {
         type: Boolean,
         default: false
     },
-    
+
     deletedAt: {
         type: Date,
         default: null
