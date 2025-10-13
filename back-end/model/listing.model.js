@@ -54,9 +54,16 @@ const listingSchema = new mongoose.Schema({
 
     },
 
-    isbooked: {
+    isBooked: {
         type: Boolean,
         default: false
+    },
+
+    ratings: {
+        type: Number,
+        min: 0,
+        max: 5,
+        default: 0
     },
 
     isDeleted: {
