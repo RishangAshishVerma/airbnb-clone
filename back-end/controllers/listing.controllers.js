@@ -158,34 +158,59 @@ export const deleteListing = async (req, res) => {
 }
 
 export const ratingListing = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { rating } = req.body;
+    try {
+        const { id } = req.params;
+        const { rating } = req.body;
 
-    
-    const listing = await Listing.findById(id);
 
-    if (!listing) {
-      return res.status(404).json({ message: "Listing not found" });
+        const listing = await Listing.findById(id);
+
+        if (!listing) {
+            return res.status(404).json({ message: "Listing not found" });
+        }
+
+
+        const Rating = Number(rating);
+        if (isNaN(Rating)) {
+            return res.status(400).json({ message: "Invalid rating value" });
+        }
+
+        listing.ratings = Rating;
+
+
+        await listing.save();
+
+        return res.status(200).json({ rating: listing.ratings });
+
+    } catch (error) {
+        console.error(error);
+        return res
+            .status(500)
+            .json({ message: `Error while updating the listing: ${error.message}` });
     }
-
-    
-    const Rating = Number(rating);
-    if (isNaN(Rating)) {
-      return res.status(400).json({ message: "Invalid rating value" });
-    }
-
-    listing.ratings = Rating;
-
-    
-    await listing.save();
-
-    return res.status(200).json({ rating: listing.ratings });
-
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(500)
-      .json({ message: `Error while updating the listing: ${error.message}` });
-  }
 };
+
+
+export const search = async (req, res) => {
+    try {
+
+        const { query } = req.query;
+
+        if (!query) {
+            return res.status(400).json({ message: `search query is required` })
+        }
+
+        const lisitng = await Listing.find({
+            $or: [
+                { landMark: { $regex: query, $options: "i" } },
+                { city: { $regex: query, $options: "i" } },
+                { title: { $regex: query, $options: "i" } },
+            ]
+        })
+            return res.status(200).json(lisitng)
+
+    } catch (error) {
+            return res.status(401).json({ message: `search query error ${error}` })
+
+    }
+}
