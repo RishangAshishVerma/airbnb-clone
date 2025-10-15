@@ -1,6 +1,7 @@
 import User from "../model/user.model.js";
 import bcrypt from "bcryptjs"
 import genToken from "../utils/token.js";
+import { sendmail } from "../utils/nodemaler.js";
 
 export const signUp = async (req, res) => {
     try {
@@ -18,8 +19,20 @@ export const signUp = async (req, res) => {
             email,
             password: hashPassword,
         });
-
         let token = await genToken(user._id)
+
+        const subject = `Welcome to Airbnb Clone, ${name}! 🏡`;
+        const htmlContent = `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2 style="color: #FF385C;">Hello, ${name}!</h2>
+        <p>Thanks for signing up on our Airbnb Clone.</p>
+        <p>You can now explore listings and enjoy the app 🚀</p>
+      </div>
+    `;
+
+        console.log("📧 Sending dynamic email to:", email);
+        await sendmail(email, subject, "Welcome to Airbnb Clone!", htmlContent);
+
 
         res.cookie("token", token, {
             httpOnly: true,
@@ -104,3 +117,12 @@ export const deleteUserByEmail = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+export const forgetPassword = async (req, res) => {
+
+    const otp = Math.floor(1000 + Math.random() * 9000);
+
+
+
+
+}
