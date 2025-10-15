@@ -1,7 +1,7 @@
 // utils/nodemailer.js
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-dotenv.config();
+// import dotenv from "dotenv";
+// dotenv.config();
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -42,33 +42,3 @@ export const sendmail = async (to, subject, text, html) => {
   }
 };
 
-
-
-
-// import nodemailer from "nodemailer";
-// import dotenv from "dotenv";
-
-// dotenv.config();
-
-// const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.SMTP_USER,
-//     pass: process.env.SMTP_PASS,
-//   },
-// });
-
-// export const sendmail = async (to, subject, text, html) => {
-//   try {
-//     const info = await transporter.sendMail({
-//       from: `"Airbnb Clone" <${process.env.SMTP_USER}>`,
-//       to:"rishangvermav15pro@gmail.com",
-//       subject:"dynmic default ",
-//       text:"test 2 ",
-//       html: html || text,
-//     });
-//     console.log("📨 Message sent:", info.messageId);
-//   } catch (err) {
-//     console.error("❌ Error sending email:", err);
-//   }
-// };

@@ -118,11 +118,59 @@ export const deleteUserByEmail = async (req, res) => {
     }
 };
 
-export const forgetPassword = async (req, res) => {
+// Temporary in-memory OTP storage
+const otpStore = {}; // it will store eamil and opt and time more scure
 
-    const otp = Math.floor(1000 + Math.random() * 9000);
+// Step 1: Request OTP
+export const requestOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
 
+        
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: "User not found" });
 
+    
+        const otp = Math.floor(1000 + Math.random() * 9000);
+        otpStore[email] = { otp, expires: Date.now() + 5 * 60 * 1000 };
 
+      
+        const subject = "Reset Password OTP";
+        const htmlContent = `<h3>Your OTP is: ${otp}</h3><p>Valid for 5 minutes.</p>`;
+        await sendmail(email, subject, `Your OTP is ${otp}`, htmlContent);
 
-}
+        return res.status(200).json({ message: "OTP sent successfully ✅" });
+    } catch (error) {
+        return res.status(500).json({ message: `Error sending OTP: ${error.message}` });
+    }
+};
+
+// Step 2: Verify OTP & reset password
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        const record = otpStore[email];
+        if (!record) return res.status(400).json({ message: "No OTP found. Request a new one." });
+
+        if (Date.now() > record.expires) {
+            delete otpStore[email];
+            return res.status(400).json({ message: "OTP expired. Request a new one." });
+        }
+
+        if (parseInt(otp) !== record.otp) {
+            return res.status(400).json({ message: "Invalid OTP ❌" });
+        }
+
+        // OTP verified → update password
+        const hashPassword = await bcrypt.hash(newPassword, 10);
+        await User.findOneAndUpdate({ email }, { password: hashPassword });
+
+        delete otpStore[email]; 
+
+        return res.status(200).json({ message: "Password reset successfully ✅" });
+    } catch (error) {
+        return res.status(500).json({ message: `Error resetting password: ${error.message}` });
+    }
+};
+
