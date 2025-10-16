@@ -9,7 +9,7 @@ export const signUp = async (req, res) => {
 
         const existeduser = await User.findOne({ email });
         if (existeduser) {
-            return res.status(200).json({ message: "User already exists" });
+            return res.status(409).json({ message: "User already exists" }); // 200 → 409
         }
 
         let hashPassword = await bcrypt.hash(password, 10)
@@ -33,14 +33,12 @@ export const signUp = async (req, res) => {
         console.log("📧 Sending dynamic email to:", email);
         await sendmail(email, subject, "Welcome to Airbnb Clone!", htmlContent);
 
-
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
+           sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
-
 
         return res.status(201).json(user)
     } catch (error) {
@@ -48,22 +46,56 @@ export const signUp = async (req, res) => {
     }
 }
 
+export const updateName = async (req, res) => {
+    try {
+        const { name } = req.body;
+        const userId = req.userId; 
+
+        if (!name) {
+            return res.status(400).json({ message: "Name is required" });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.name = name;
+        await user.save();
+
+        const subject = `Your profile has been updated, ${name}! 🎉`;
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2 style="color: #FF385C;">Hello, ${name}!</h2>
+                <p>Your profile name has been successfully updated.</p>
+            </div>
+        `;
+
+        console.log("📧 Sending update email to:", user.email);
+        await sendmail(user.email, subject, "Profile Updated", htmlContent);
+
+        return res.status(200).json({ message: "Name updated successfully", user });
+
+    } catch (error) {
+        return res.status(500).json({ message: `update name error ${error}` });
+    }
+}
+
+
 export const logIn = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-
         const existeduser = await User.findOne({ email });
 
         if (!existeduser) {
-            return res.status(200).json({ message: "User does not exist" });
+            return res.status(404).json({ message: "User does not exist" }); // 200 → 404
         }
-
 
         let isMatch = await bcrypt.compare(password, existeduser.password);
 
         if (!isMatch) {
-            return res.status(200).json({ message: "Incorrect password" });
+            return res.status(401).json({ message: "Incorrect password" }); // 200 → 401
         }
 
         let token = await genToken(existeduser._id);
@@ -71,28 +103,28 @@ export const logIn = async (req, res) => {
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            sameSite: "none",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        return res.status(201).json({
+        return res.status(200).json({
             user: existeduser,
-            message: "Login successful"
+            message: "Login successful" // 201 → 200
         });
 
     } catch (error) {
-        return res.status(200).json({ message: `login error ${error} ` });
+        return res.status(500).json({ message: `login error ${error} ` }); // 200 → 500
     }
 }
 
 export const logOut = async (req, res) => {
     try {
         res.clearCookie("token")
-        return res.status(201).json({
+        return res.status(200).json({ // 201 → 200
             message: "logout successful"
         });
     } catch (error) {
-        return res.status(200).json({ message: `logout error ${error} ` });
+        return res.status(500).json({ message: `logout error ${error} ` }); // 200 → 500
     }
 }
 
@@ -119,22 +151,19 @@ export const deleteUserByEmail = async (req, res) => {
 };
 
 // Temporary in-memory OTP storage
-const otpStore = {}; // it will store eamil and opt and time more scure
+const otpStore = {}; 
 
 // Step 1: Request OTP
 export const requestOtp = async (req, res) => {
     try {
         const { email } = req.body;
 
-        
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ message: "User not found" });
 
-    
         const otp = Math.floor(1000 + Math.random() * 9000);
         otpStore[email] = { otp, expires: Date.now() + 5 * 60 * 1000 };
 
-      
         const subject = "Reset Password OTP";
         const htmlContent = `<h3>Your OTP is: ${otp}</h3><p>Valid for 5 minutes.</p>`;
         await sendmail(email, subject, `Your OTP is ${otp}`, htmlContent);
@@ -162,7 +191,6 @@ export const resetPassword = async (req, res) => {
             return res.status(400).json({ message: "Invalid OTP ❌" });
         }
 
-        // OTP verified → update password
         const hashPassword = await bcrypt.hash(newPassword, 10);
         await User.findOneAndUpdate({ email }, { password: hashPassword });
 
@@ -173,4 +201,3 @@ export const resetPassword = async (req, res) => {
         return res.status(500).json({ message: `Error resetting password: ${error.message}` });
     }
 };
-

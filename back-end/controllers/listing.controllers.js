@@ -21,17 +21,18 @@ export const addListing = async (req, res) => {
             image2,
             image3,
             host
-
         })
+
         let user = await User.findByIdAndUpdate(
             host,
             { $push: { listing: listing._id } },
             { new: true }
         );
-        if (!user) {
-            res.status(404).json({ message: `user not found` })
 
+        if (!user) {
+            return res.status(404).json({ message: `user not found` })
         }
+
         res.status(201).json(listing)
     } catch (error) {
         res.status(500).json({ message: `there is some erro while creating the lsting ${error}` })
@@ -40,10 +41,9 @@ export const addListing = async (req, res) => {
 
 export const getListing = async (req, res) => {
     try {
-        let listing = await Listing.find({ isDeleted: false }).sort({ createAT: -1 })
+        let listing = await Listing.find({ isDeleted: false }).sort({ createdAt: -1 })
         if (!listing) {
-            res.status(200).json(`liisting dose not found`)
-
+            return res.status(404).json(`liisting dose not found`)
         }
         res.status(200).json(listing)
     } catch (error) {
@@ -53,7 +53,6 @@ export const getListing = async (req, res) => {
 
 export const getUserListing = async (req, res) => {
     try {
-
         const userId = req.userId;
         const user = await User.findById(userId).populate({
             path: "listing",
@@ -80,12 +79,11 @@ export const getListingById = async (req, res) => {
         let { id } = req.params
         let listing = await Listing.findById(id)
         if (!listing) {
-            res.status(200).json({ message: `listing not found` })
+            return res.status(404).json({ message: `listing not found` })
         }
         res.status(200).json(listing)
     } catch (error) {
         res.status(500).json({ message: `find lisitng error ${error}` })
-
     }
 }
 
@@ -100,10 +98,10 @@ export const updateListing = async (req, res) => {
             image1 = await uploadOnCloudinary(req.files.image1[0].path)
         }
         if (req.files.image2) {
-            image1 = await uploadOnCloudinary(req.files.image2[0].path)
+            image2 = await uploadOnCloudinary(req.files.image2[0].path)
         }
         if (req.files.image3) {
-            image1 = await uploadOnCloudinary(req.files.image3[0].path)
+            image3 = await uploadOnCloudinary(req.files.image3[0].path)
         }
 
         let listing = await Listing.findByIdAndUpdate(id, {
@@ -121,13 +119,12 @@ export const updateListing = async (req, res) => {
         }, { new: true })
         res.status(200).json(listing)
     } catch (error) {
-        res.status(200).json({ message: `error while updateing the list ${error}` })
+        res.status(500).json({ message: `error while updateing the list ${error}` })
     }
 }
 
 export const deleteListing = async (req, res) => {
     try {
-        // let user1 = req.userId not needed 
         let listingId = req.params.id;
         let listing = await Listing.findById(listingId)
         let user = await User.findByIdAndUpdate(listing.host, {
@@ -138,7 +135,7 @@ export const deleteListing = async (req, res) => {
         }
 
         if (!listing) {
-            res.status(201).json({ message: `listing not found` })
+            return res.status(404).json({ message: `listing not found` })
         }
 
         if (listing.isDeleted) return res.status(400).json({ message: "already delete Listing" });
@@ -150,11 +147,9 @@ export const deleteListing = async (req, res) => {
 
         res.status(200).json({ message: "lissting delete " });
 
-
     } catch (error) {
         res.status(500).json({ message: `listing deleting error ${error}` });
     }
-
 }
 
 export const ratingListing = async (req, res) => {
@@ -162,13 +157,11 @@ export const ratingListing = async (req, res) => {
         const { id } = req.params;
         const { rating } = req.body;
 
-
         const listing = await Listing.findById(id);
 
         if (!listing) {
             return res.status(404).json({ message: "Listing not found" });
         }
-
 
         const Rating = Number(rating);
         if (isNaN(Rating)) {
@@ -176,7 +169,6 @@ export const ratingListing = async (req, res) => {
         }
 
         listing.ratings = Rating;
-
 
         await listing.save();
 
@@ -207,10 +199,9 @@ export const search = async (req, res) => {
                 { title: { $regex: query, $options: "i" } },
             ]
         })
-            return res.status(200).json(lisitng)
+        return res.status(200).json(lisitng)
 
     } catch (error) {
-            return res.status(401).json({ message: `search query error ${error}` })
-
+        return res.status(500).json({ message: `search query error ${error}` })
     }
 }
