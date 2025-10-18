@@ -91,6 +91,9 @@ export const logIn = async (req, res) => {
         if (!existeduser) {
             return res.status(404).json({ message: "User does not exist" }); // 200 → 404
         }
+       if (existeduser.isDeleted === true) {
+            return res.status(403).json({ message: "Account has been deleted. Please contact support." });
+       }
 
         let isMatch = await bcrypt.compare(password, existeduser.password);
 
