@@ -59,6 +59,8 @@ Follow these instructions to get a local copy of the project up and running.
     Create a `.env` file in the root of the project and add the following configuration.
 
     ```env
+    NODE_ENV="production"
+    
     # Server Configuration
     PORT=5000
 
@@ -76,6 +78,7 @@ Follow these instructions to get a local copy of the project up and running.
     # Nodemailer (for OTP emails)
     EMAIL_USER=<your_email_address>
     EMAIL_PASS=<your_email_password_or_app_password>
+    
     ```
 
 ### Running the Application
